@@ -15,3 +15,5 @@ void InitKeyboard(void (*interrupt_handler)());
 unsigned char keyb(void);
 
 struct Input get_input();
+
+void init_keyboard();

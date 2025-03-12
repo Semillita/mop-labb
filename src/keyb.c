@@ -79,7 +79,7 @@ unsigned int get_row_values() {
 }
 
 struct Input get_input() {
-    struct Input input;
+    struct Input input = {{0, 0}, {0, 0}};
 
     kbdActivate(1);
     unsigned int row = get_row_values();
@@ -99,5 +99,24 @@ struct Input get_input() {
         input.player_2.down = 1;
     }
     
+    kbdActivate(0);
+
     return input;
+}
+
+// Den som inte använder interrupt handler
+void init_keyboard() {
+ // b15-b12 used for output to rows
+// b11-b8  used for input from columns
+*GPIO_D_MODER &= 0x0000FFFF;
+*GPIO_D_MODER |= 0x55000000;
+// Pinnarna som läses från tangentbordet är spänningssatta om
+// nedtryckta och flytande annars, så behöver Pull Down
+*GPIO_D_PUPDR &= 0x0000FFFF;
+*GPIO_D_PUPDR |= 0x00AA0000;
+// Pinnarna som väljer rad skall vara spänningssatta (Push/Pull)
+*GPIO_D_OTYPER= 0x00000000;
+*GPIO_D_OSPEEDR = 0xAAAAAAAA;
+// Activate all rows
+//*GPIO_D_ODRHIGH = 0xF0;
 }

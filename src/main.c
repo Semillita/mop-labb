@@ -8,37 +8,6 @@
 #include "gameloop.h"
 #include "fpu.h"
 
-//extern void enableFpu(void);
-
-void floatTest(void){
-    //*CPACR |= 0x00F00000; // Sätt igång FPU, gör ingen skillnad
-    enable_fpu();
-
-    float a = 2.0f;
-    float b = 3.0f;
-    float c = a * b; // Fungerar inte, c blir inf
-    float d = a + b; // Fungerar bra
-
-    double e = 2.0;
-    double f = 3.0;
-    double g = e * f; // Fungerar bra
-    double h = e + f; // Fungerar inte, h blir 2
-
-    float i = 49.0f;
-    float j = sqrtf(i);
-
-    double k = 49.0;
-    //double l = sqrt(k); // Kraschar simserver
-
-    double m = 47.0;
-    float n = (float) m; // Fungerar inte, n blir inf
-
-    double* distances = castRays(2, 2, 45.0f);
-    double rayDistance0 = distances[0];
-    double rayDistance1 = distances[1];
-    double rayDistance2 = distances[2];
-}
-
 void swap(int* a, int* b) {
     int temp = *a;
     *a = *b;
@@ -85,14 +54,6 @@ int bresenham(int x0, int y0, int x1, int y1) {
     return 0;
 }
 
-int keys[16];
-
-int px = 20;
-int py = 20;
-
-int prev_px = 0;
-int prev_py = 0;
-
 const int player_1_x = 20;
 const int player_2_x = 108;
 
@@ -102,8 +63,8 @@ int player_2_y = 20;
 int ball_x = 64;
 int ball_y = 32;
 
-int ball_speed_x = 1;
-int ball_speed_y = 1;
+int ball_speed_x = 5;
+int ball_speed_y = 5;
 
 void key_handler() {
     *EXTI_IMR = 0x000;
@@ -162,16 +123,42 @@ void update_ball_position() {
     }
 }
 
-void draw_ball() {
-    //bresenham(ball_x - 1, ball_y - 1, ball_x + 1, ball_y + 1);
-    //bresenham(ball_x - 1, ball_y + 1, ball_x + 1, ball_y - 1);
+void draw_pixel(int x, int y) {
+    if (x >= 1 && x < 128 && y >= 1 && y <= 64) {
+        graphic_pixel_set(x, y);
+    }
+}
 
-    unsigned int ball_size = 5;
-    for (int x = ball_x - (ball_size / 2); x < ball_x + (ball_size / 2); x++) {
-        for (int y = ball_y - (ball_size / 2); y < ball_y + (ball_size / 2); y++) {
-            if (x >= 0 && x < 128 && y >= 0 && y <= 64) {
+void draw_ball() {
+    for (int x = 0; x < 128; x++) {
+        graphic_pixel_set(x, 1);
+    }
+
+    for (int x = 0; x < 128; x++) {
+        graphic_pixel_set(x, 64);
+    }
+
+    for (int y = 0; y < 64; y++) {
+        graphic_pixel_set(1, y);
+    }
+
+    for (int y = 0; y < 64; y++) {
+        graphic_pixel_set(127, y);
+    }
+
+    for (int x = ball_x - 2; x <= ball_x + 2; x++) {
+        for (int y = ball_y - 2; y <= ball_y + 2; y++) {
+            if (x >= 1 && x < 128 && y >= 1 && y <= 64) {
                 graphic_pixel_set(x, y);
             }
+        }
+    }
+}
+
+void draw_player(int player_x, int player_y) {
+    for (int x = player_x - 2; x <= player_x + 2; x++) {
+        for (int y = player_y; y < player_y + 20; y++) {
+            draw_pixel(x, y);
         }
     }
 }
@@ -185,12 +172,14 @@ void update() {
 
     graphic_clear_screen();
     draw_ball();
+    draw_player(player_1_x, player_1_y);
+    draw_player(player_2_x, player_2_y);
 }
 
 void main(void) {
     enable_fpu();
     graphic_initialize();
-    InitKeyboard(key_handler);
+    init_keyboard();
     graphic_clear_screen();
     bresenham(128/2, 64/2, 0, 0);
     bresenham(128/2, 64/2, 128, 64);
@@ -199,40 +188,5 @@ void main(void) {
 
     start_game_loop(update, 80);
 
-    while (1) {
-        /*if ((prev_px != px) || (prev_py != py)) {
-            graphic_clear_screen();
-            prev_px = px;
-            prev_py = py;
-            bresenham(px, py, px + 30, py + 30);
-        }*/
-    }
-
-    float a = 2.0f;
-    float b = 3.0f;
-    float c = a * b; // Fungerar inte, c blir inf
-    float d = a + b; // Fungerar bra
-
-    double e = 2.0;
-    double f = 3.0;
-    double g = e * f; // Fungerar bra
-    double h = e + f; // Fungerar inte, h blir 2
-
-    float i = 49.0f;
-    float j = sqrtf(i);
-
-    double k = 49.0;
-    //double l = sqrt(k); // Kraschar simserver
-
-    double m = 47.0;
-    float n = (float) m; // Fungerar inte, n blir inf
-
-    double* distances = castRays(2, 2, 45.0f);
-    double rayDistance0 = distances[0];
-    double rayDistance1 = distances[1];
-    double rayDistance2 = distances[2];
-
-    while(1) {
-
-    }
+    while (1) {}
 }
